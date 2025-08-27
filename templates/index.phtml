@@ -1,0 +1,35 @@
+<!-- templates/index.phtml -->
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Page Analyzer</title>
+    <!-- Подключение Bootstrap CSS по CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+</head>
+<body>
+    <!-- Контейнер для выравнивания контента по ширине -->
+    <div class="container mt-5">
+        <!-- Заголовок с Bootstrap классами -->
+        <h1 class="text-center mb-4">Page Analyzer</h1>
+        <p class="text-center">Welcome to Page Analyzer! Provide a URL to analyze.</p>
+
+        <!-- Форма для ввода URL, обернутая в сетку Bootstrap -->
+        <div class="row justify-content-center">
+            <div class="col-md-6"> <!-- Занимает 6 колонок на средних и больших экранах -->
+                <form action="/analyze" method="POST"> <!-- Указываем куда отправить данные и методом POST -->
+                    <div class="mb-3"> <!-- Отступ снизу -->
+                        <label for="url" class="form-label">Enter URL:</label> <!-- Метка поля -->
+                        <input type="text" class="form-control" id="url" name="url" placeholder="https://example.com" required> <!-- Поле ввода с классами Bootstrap -->
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Analyze</button> <!-- Кнопка с классами Bootstrap -->
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Подключение Bootstrap JS (опционально, но рекомендуется для интерактивных компонентов) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGnuOLrX3zSRpr+3bYqJvjB1C9oHw3s+k/7nB4/0Y" crossorigin="anonymous"></script>
+</body>
+</html>
