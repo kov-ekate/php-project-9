@@ -11,11 +11,12 @@ $container->set('renderer', function () {
 });
 
 $app = AppFactory::createFromContainer($container);
+$app->addErrorMiddleware(true, true, true);
 
 $app->get('/', function ($request, $response) {
-    error_log('render / once');
-    $params = [];
-    return $this->get('renderer')->render($response, 'index.phtml', $params);
+    error_log('--- SIMPLE RENDER ---');
+    // Просто вернуть пустой ответ, чтобы увидеть, сколько раз это произойдет
+    return $response->withStatus(200);
 });
 
 $app->run();
