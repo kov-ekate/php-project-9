@@ -14,6 +14,7 @@ $app = AppFactory::createFromContainer($container);
 $app->addErrorMiddleware(true, true, true);
 
 $app->get('/', function ($request, $response) {
+    error_log('render / once');
     $params = [];
     return $this->get('renderer')->render($response, 'index.phtml', $params);
 });
