@@ -13,6 +13,10 @@ $container->set('renderer', function () {
 $app = AppFactory::createFromContainer($container);
 $app->addErrorMiddleware(true, true, true);
 
+$app->head('/', function ($request, $response) {
+    return $response->withHeader('Content-Length', '0');
+});
+
 $app->get('/', function ($request, $response) {
     error_log('render / once');
     $params = [];
