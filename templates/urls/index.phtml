@@ -53,7 +53,7 @@
 </head>
 <body>
         <?php if (!empty($errors)): ?>
-            <?= $this->fetch('_form.phtml', ['url[name]' => $url, 'flash' => $flash]) ?>
+            <?= $this->fetch('_form.phtml', ['flash' => $flash]) ?>
             <?php else: ?>
             <?= $this->fetch('_nav.phtml') ?>
             <h1>Сайты</h1>
