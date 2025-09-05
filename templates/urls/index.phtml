@@ -45,7 +45,7 @@
         border: 1px, solid, #d8d8d8ff;
         text-align: left;
     }
-    h1 {
+    .sites {
         font-size: 50px;
         padding-left: 290px;
     }
@@ -53,10 +53,11 @@
 </head>
 <body>
         <?php if (!empty($errors)): ?>
-            <?= $this->fetch('_form.phtml', ['flash' => $flash]) ?>
+            <?= $this->fetch('_nav.phtml') ?>
+            <?= $this->fetch('_form.phtml', ['url' => $url, 'flash' => $flash]) ?>
             <?php else: ?>
             <?= $this->fetch('_nav.phtml') ?>
-            <h1>Сайты</h1>
+            <h1 class="sites">Сайты</h1>
             <div class="container text-center">
                 <table class="table table-hover" data-test="urls">
                     <thead>
