@@ -3,6 +3,7 @@
 namespace App;
 
 use App\Url;
+use Carbon\Carbon;
 
 class UrlRepository
 {
@@ -13,10 +14,19 @@ class UrlRepository
         $this->conn = $conn;
     }
 
+     public function urlExists(string $url): bool
+    {
+        $sql = "SELECT COUNT(*) FROM urls WHERE name = ?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute([$url]);
+        $count = (int) $stmt->fetchColumn();
+        return $count > 0;
+    }
+
     public function getEntities(): array
     {
         $urls = [];
-        $sql = "SELECT * FROM urls";
+        $sql = "SELECT * FROM urls ORDER BY id DESC";
         $stmt = $this->conn->query($sql);
 
         while ($row = $stmt->fetch()) {
@@ -41,8 +51,12 @@ class UrlRepository
         return null;
     }
 
-    public function save(Url $url): void
+    public function save(Url $url): bool
     {
+        if ($this->urlExists($url->getName())) {
+            return false;
+        }
+
         $sql = "INSERT INTO urls (name, created_at) VALUES (:name, :created_at)";
         $stmt = $this->conn->prepare($sql);
         $name = $url->getName();
@@ -52,5 +66,27 @@ class UrlRepository
         $stmt->execute();
         $id = (int) $this->conn->lastInsertId();
         $url->setId($id);
+        
+        return true;
+    }
+
+    public function delete(int $id): void
+    {
+        $sql = "DELETE FROM urls WHERE id = ?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute([$id]);
+
+        // Получаем имя последовательности
+        $sqlGetSequence = "SELECT pg_get_serial_sequence('urls', 'id');";
+        $stmtGetSequence = $this->conn->prepare($sqlGetSequence);
+        $stmtGetSequence->execute();
+        $sequenceName = $stmtGetSequence->fetchColumn();
+
+        // Сброс последовательности
+        if ($sequenceName) {
+            $sqlReset = "ALTER SEQUENCE {$sequenceName} RESTART WITH 1;";
+            $stmtReset = $this->conn->prepare($sqlReset);
+            $stmtReset->execute();
+        }
     }
 }

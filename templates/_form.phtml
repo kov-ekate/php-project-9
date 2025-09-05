@@ -1,0 +1,21 @@
+    <div class="container mt-5">
+        <div class="card">
+            <h1 class="mb-1">Анализатор страниц</h1>
+            <div class="card-body">
+                <p class="mb-4">Бесплатно проверяйте сайты на SEO пригодность</p>
+                <form action="/urls" method="post">
+                    <div class="d-flex align-items-start">
+                        <div class="flex-grow-1">
+                            <input type="text" id="url" name="url[name]" class="form-control me-4 <?= !empty($flash['error']) ? 'is-invalid' : '' ?> mb-2" value="<?= htmlspecialchars($url ?? '') ?>" placeholder="https://www.example.com">
+                                <?php if (!empty($flash) && isset($flash['error'])): ?>
+                                    <?php foreach ($flash['error'] as $message): ?>
+                                        <div class="invalid-feedback"><?= htmlspecialchars($message) ?></div>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                        </div>
+                        <button type="submit" class="btn btn-primary ms-4">Проверить</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>

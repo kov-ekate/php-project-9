@@ -2,21 +2,20 @@
 
 namespace App;
 
+use Carbon\Carbon;
+
 class Url 
 {
     private ?int $id = null;
     private ?string $name = null;
-    private ?string $createdAt = null;
+    private ?Carbon $createdAt = null;
 
     public static function fromArray(array $urlData): Url
     {
-        ['name' => $name, 'createdAt' => $createdAt] = $urlData;
-        if ($createdAt === null) {
-        throw new \InvalidArgumentException('CreatedAt cannot be null');
-    }
+        ['name' => $name] = $urlData;
         $url = new Url;
         $url->setName($name);
-        $url->setCreatedAt($createdAt);
+        $url->setCreatedAt();
         
         return $url;
     }
@@ -46,8 +45,9 @@ class Url
         $this->name = $name;
     }
 
-    public function setCreatedAt(string $createdAt): void
+    public function setCreatedAt(): void
     {
+        $createdAt = Carbon::now();
         $this->createdAt = $createdAt;
     }
 

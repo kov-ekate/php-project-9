@@ -9,8 +9,8 @@ class Validator implements ValidatorInterface
         $errors = [];
         $parsedUrl = parse_url($url);
 
-        if (empty($url)) {
-            $errors['url'] = 'URL не может быть пустым';
+        if (empty($url) || trim($url) === '') {
+            $errors['url'] = 'URL не должен быть пустым';
             return $errors;
         }
 

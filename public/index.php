@@ -8,8 +8,8 @@ use App\Validator;
 use Slim\Factory\AppFactory;
 use DI\Container;
 use Slim\Views\PhpRenderer;
-use Carbon\Carbon;
 use Slim\Middleware\Session;
+use SlimSession\Helper as SessionHelper;
 
 
 $container = new Container();
@@ -50,32 +50,38 @@ $app = AppFactory::createFromContainer($container);
 $app->addErrorMiddleware(true, true, true);
 $router = $app->getRouteCollector()->getRouteParser();
 
+$container->set('session', function () {
+    return new SessionHelper();
+});
+
 $app->add(new Session());
 
 $app->get('/', function ($request, $response) {
     return $this->get('renderer')->render($response, 'index.phtml');
 });
 
-$app->get('/urls', function ($request, $response) {
-    $errors = $_SESSION['errors'] ?? [];
-    $url = $_SESSION['url'] ?? '';
-
-    unset($_SESSION['errors']);
-    unset($_SESSION['url']);
+$app->get('/urls', function ($request, $response) use ($router) {
+    $session = $this->get('session');
+    $errors = $session->get('errors', []);
+    $url = $session->get('url', ''); 
+    $session->delete('errors');
+    $session->delete('url');
 
     $urlRepository = $this->get(UrlRepository::class);
     $urls = $urlRepository->getEntities();
-    $message = $this->get('flash')->getMessages();
+
+    $flash = $this->get('flash')->getMessages();
 
     $params = [
         'urls' => $urls,
-        'flash' => $message,
         'errors' => $errors,
-        'url' => $url
+        'url' => $url,
+        'flash' => $flash,
+        'router' => $router
     ];
 
     return $this->get('renderer')->render($response, 'urls/index.phtml', $params);
-})->setName('url.index');
+})->setName('urls.index');
 
 $app->get('/urls/{id}', function ($request, $response, $args) {
     $id = $args['id'];
@@ -99,33 +105,61 @@ $app->get('/urls/{id}', function ($request, $response, $args) {
 $app->post('/urls', function ($request, $response) use ($router) {
     $urlRepository = $this->get(UrlRepository::class);
     $parsedBody = $request->getParsedBody();
-    $urlData = $parsedBody['url'] ?? null;
+    $urlData = $parsedBody['url']['name'] ?? null;
 
     $validator = new Validator;
     $errors = $validator->validate($urlData);
 
+    $session = $this->get('session');
+
     if (count($errors) === 0) {
         $normalUrl = $validator->normalyzer($urlData);
-        $createdAt = Carbon::now()->format('Y-m-d H:i:s');
-         if ($createdAt === null) {
-            throw new \RuntimeException('Failed to get current date and time');
+        $url = Url::fromArray(['name' => $normalUrl]);
+        $success = $urlRepository->save($url);
+        if ($success) {
+            $this->get('flash')->addMessage('success', 'Страница успешно добавлена');
+            $id = $url->getId();
+            return $response->withHeader('Location', $router->urlFor('url.show', ['id' => $id]))
+                            ->withStatus(302);
+        } else {
+            $errors['url'] = 'Этот URL уже существует';
+            $session->set('errors', $errors);
+            $this->get('flash')->addMessage('error', 'Этот URL уже существует');
+            $session->set('url', $urlData);
+            return $response->withHeader('Location', $router->urlFor('urls.index'))
+                             ->withStatus(302);
         }
-        $data = ['name' => $normalUrl, 'createdAt' => $createdAt];
-        echo '<pre>';
-        var_dump($data);
-        echo '<pre>';
-        $url = Url::fromArray(['name' => $normalUrl, 'createdAt' => $createdAt]);
-        $urlRepository->save($url);
-        $this->get('flash')->addMessage('success', 'Страница успешно добавлена');
-        $id = $url->getId();
-        return $response->withHeader('Location', $router->urlFor('url.show', ['id' => $id]))->withStatus(302);
+    } else {
+        $session->set('errors', $errors);
+        $session->set('url', $urlData);
+        if ($errors['url'] === 'URL не должен быть пустым') {
+            $this->get('flash')->addMessage('error', 'URL не должен быть пустым');
+        } else {
+            $this->get('flash')->addMessage('error', 'Некорректный URL');
+        }
+        return $response->withHeader('Location', $router->urlFor('urls.index'))
+                        ->withStatus(302);
     }
+})->setName('post');
 
-    $_SESSION['errors'] = $errors;
-    $_SESSION['url'] = $urlData;
+$app->post('/urls/{id}/delete', function ($request, $response, array $args) use ($router) {
+    $id = $args['id'];
+    $urlRepository = $this->get(UrlRepository::class);
 
-    $this->get('flash')->addMessage('error', 'Некорректный URL');
-    return $response->withRedirect($router->urlFor('url.index'));
-});
+    $urlRepository->delete($id);
+
+    $this->get('flash')->addMessage('success', 'URL успешно удален');
+
+    // Получаем URL для перенаправления
+    $url = $router->urlFor('urls.index');
+
+    // Устанавливаем заголовок Location для перенаправления
+    $response = $response->withHeader('Location', $url);
+
+    // Устанавливаем HTTP-код 302 для перенаправления (Found)
+    $response = $response->withStatus(302);
+
+    return $response;
+})->setName('urls.delete'); // Имя маршрута
 
 $app->run();
