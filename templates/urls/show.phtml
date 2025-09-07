@@ -15,6 +15,9 @@
         padding-left: 325px;
         padding-top: 20px;
     }
+    .form {
+        padding-left: 325px;
+    }
     </style>
 </head>
 <body>
@@ -49,48 +52,37 @@
         </div>
     </div>
 
-    <h1 class="mb-1">Проверки <?= htmlspecialchars($url->getName()) ?></h1>
+    <h1 class="mb-4">Проверки</h1>
+        <form action="<?= $router->urlFor('url.post.check', ['id' => $url->getId()]) ?>" method="post" class="form mb-4">
+            <input type="submit" value="Запустить проверку" class="btn btn-primary">
+        </form>
     <div class="container mt-4">
-        <form action="/urls/<?= $url->getId() ?>/checks" method="post">
-        <input type="submit" value="Запустить проверку">
         <div class="container text-center">
             <table class="table table-hover" data-test="checks">
-                <tbody>
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Код ответа</th>
+                    <th>h1</th>
+                    <th>title</th>
+                    <th>description</th>
+                    <th>Дата создания</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if (!empty($urlChecks)): ?>
+                    <?php foreach ($urlChecks as $check): ?>
                     <tr>
-                        <td>ID</td>
-                        <td><?= htmlspecialchars($urlCheck->getId()) ?></td>
-                    </tr>
-                    <tr>
-                        <td>Код ответа</td>
+                        <td><?= htmlspecialchars($check->getId()) ?></td>
                         <td></td>
-                    </tr>
-                    <tr>
-                        <td>h1</td>
                         <td></td>
-                    </tr>
-                    <tr>
-                        <td>title</td>
                         <td></td>
-                    </tr>
-                    <tr>
-                        <td>description</td>
                         <td></td>
+                        <td><?= htmlspecialchars($check->getCreatedAt()) ?></td>
                     </tr>
-                    <tr>
-                        <td>Дата создания</td>
-                        <td><?= htmlspecialchars($urlCheck->getCreatedAt()) ?></td>
-                    </tr>
-                </tbody>
-            </table>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+        <?php endif; ?>
         </div>
     </div>
-
-
-
-    <form action="/urls/<?= $url->getId() ?>/delete" method="post">
-    <input type="submit" value="Delete">
-    </form>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
-</body>
-</html>
-        

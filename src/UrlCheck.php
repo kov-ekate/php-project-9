@@ -15,9 +15,25 @@ class UrlCheck
         ['url_id' => $urlId] = $urlData;
         $url = new UrlCheck;
         $url->setUrlId($urlId);
-        $url->setCreatedAt();
+        $createdAt = Carbon::now();
+        $url->createdAt = $createdAt;
         
         return $url;
+    }
+
+    public static function fromDatabaseRow(array $row): UrlCheck
+    {
+        $urlId = $row['url_id'];
+        $id = $row['id'];
+        $createdAtString = $row['created_at'];
+        $createdAt = new Carbon($createdAtString);
+        $urlCheck = new UrlCheck();
+
+        $urlCheck->setId($id);
+        $urlCheck->setUrlId($urlId);
+        $urlCheck->setCreatedAt($createdAt);
+
+        return $urlCheck;
     }
 
     public function getId(): ?int
@@ -45,9 +61,8 @@ class UrlCheck
         $this->urlId = $urlId;
     }
 
-    public function setCreatedAt(): void
+    public function setCreatedAt(Carbon $createdAt): void
     {
-        $createdAt = Carbon::now();
         $this->createdAt = $createdAt;
     }
 

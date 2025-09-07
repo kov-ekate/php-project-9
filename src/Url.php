@@ -15,8 +15,24 @@ class Url
         ['name' => $name] = $urlData;
         $url = new Url;
         $url->setName($name);
-        $url->setCreatedAt();
+        $createdAt = Carbon::now();
+        $url->createdAt = $createdAt;
         
+        return $url;
+    }
+
+    public static function fromDatabaseRow(array $row): Url
+    {
+        $name = $row['name'];
+        $id = $row['id'];
+        $createdAtString = $row['created_at'];
+        $createdAt = new Carbon($createdAtString);
+        $url = new Url();
+
+        $url->setId($id);
+        $url->setName($name);
+        $url->setCreatedAt($createdAt);
+
         return $url;
     }
 
@@ -45,9 +61,8 @@ class Url
         $this->name = $name;
     }
 
-    public function setCreatedAt(): void
+    public function setCreatedAt(Carbon $createdAt): void
     {
-        $createdAt = Carbon::now();
         $this->createdAt = $createdAt;
     }
 

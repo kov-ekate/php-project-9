@@ -33,6 +33,8 @@ $container->set(\PDO::class, function () {
     try {
         $pdo = new PDO($dsn, $username, $password);
         $pdo->setAttribute(\PDO::ATTR_DEFAULT_FETCH_MODE, \PDO::FETCH_ASSOC);
+        $sql = file_get_contents(__DIR__ . '/../database.sql');
+        $pdo->exec($sql);
         return $pdo;
     } catch (\PDOException $e) {
         throw new \PDOException("Ошибка подключения к базе данных: " . $e->getMessage(), (int)$e->getCode());
@@ -76,13 +78,28 @@ $app->get('/urls', function ($request, $response) use ($router) {
 
     $urlRepository = $this->get(UrlRepository::class);
     $urls = $urlRepository->getEntities();
+    $urlCheckRepository = $this->get(UrlRepository::class);
+    $urlChecks = $urlCheckRepository->getEntities();
+    $lastChecks = $urlRepository->getLastChecks();
+    $urlsWithLastCheck = [];
+    foreach ($urls as $url) {
+        $urlId = $url->getId();
+        $lastCheck = $lastChecks[$urlId] ?? null;
+
+        $urlsWithLastCheck[] = [
+            'id' => $urlId,
+            'name' => $url->getName(),
+            'last_check' => $lastCheck,
+        ];
+    }
 
     $flash = $this->get('flash')->getMessages();
 
     $params = [
-        'urls' => $urls,
+        'urls' => $urlsWithLastCheck,
         'errors' => $errors,
         'url' => $url,
+        'urlChecks' => $urlChecks,
         'flash' => $flash,
         'router' => $router
     ];
@@ -90,22 +107,23 @@ $app->get('/urls', function ($request, $response) use ($router) {
     return $this->get('renderer')->render($response, 'urls/index.phtml', $params);
 })->setName('urls.index');
 
-$app->get('/urls/{id}', function ($request, $response, $args) {
+$app->get('/urls/{id}', function ($request, $response, $args) use ($router) {
     $id = $args['id'];
     $urlRepository = $this->get(UrlRepository::class);
     $urlCheckRepository = $this->get(UrlCheckRepository::class);
     $url = $urlRepository->find($id);
 
     if (is_null($url)) {
-        return $response->getBody->write('Страница не найдена')->withStatus(404);
+        return $response->withStatus(404);
     }
 
     $message = $this->get('flash')->getMessages();
-    $urlChecks = $urlCheckRepository->findByUrlId($id);
+    $urlChecks = $urlCheckRepository->find($id);
 
     $params = [
+        'router' => $router,
         'url' => $url,
-        'urlCheck' => $urlChecks,
+        'urlChecks' => $urlChecks,
         'flash' => $message
     ];
 
@@ -158,28 +176,9 @@ $app->post('/urls/{id}/checks', function ($request, $response, $args) use ($rout
     $urlData = ['url_id' => $id];
     $url = UrlCheck::fromArray($urlData);
     $UrlCheckRepository->save($url);
+    $this->get('flash')->addMessage('success', 'Страница успешно проверена');
     return $response->withHeader('Location', $router->urlFor('url.show', ['id' => $id]))
                     ->withStatus(302);
 })->setName('url.post.check');
-
-$app->post('/urls/{id}/delete', function ($request, $response, array $args) use ($router) {
-    $id = $args['id'];
-    $urlRepository = $this->get(UrlRepository::class);
-
-    $urlRepository->delete($id);
-
-    $this->get('flash')->addMessage('success', 'URL успешно удален');
-
-    // Получаем URL для перенаправления
-    $url = $router->urlFor('urls.index');
-
-    // Устанавливаем заголовок Location для перенаправления
-    $response = $response->withHeader('Location', $url);
-
-    // Устанавливаем HTTP-код 302 для перенаправления (Found)
-    $response = $response->withStatus(302);
-
-    return $response;
-})->setName('urls.delete'); // Имя маршрута
 
 $app->run();

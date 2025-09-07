@@ -3,6 +3,7 @@
 namespace App;
 
 use App\Url;
+use Carbon\Carbon;
 
 class UrlRepository
 {
@@ -29,12 +30,37 @@ class UrlRepository
         $stmt = $this->conn->query($sql);
 
         while ($row = $stmt->fetch()) {
-            $url = Url::fromArray($row);
+            $url = Url::fromDatabaseRow($row);
             $url->setId($row['id']);
             $urls[] = $url;
         }
 
         return $urls;
+    }
+
+    public function getLastChecks(): array
+    {
+        $lastChecks = [];
+        $sql = "SELECT
+                    urls.id,
+                    urls.name,
+                    MAX(url_checks.created_at) AS last_check
+                FROM
+                    urls
+                LEFT JOIN
+                    url_checks ON urls.id = url_checks.url_id
+                GROUP BY
+                    urls.id, urls.name
+                ORDER BY
+                    urls.id DESC
+            ";
+        $stmt = $this->conn->query($sql);
+
+        while ($row = $stmt->fetch()) {
+            $lastChecks[$row['id']] = $row['last_check'] ? new Carbon($row['last_check']) : null;
+        }
+
+        return $lastChecks;
     }
 
     public function find(int $id): ?Url
@@ -43,7 +69,7 @@ class UrlRepository
         $stmt = $this->conn->prepare($sql);
         $stmt->execute([$id]);
         if ($row = $stmt->fetch())  {
-            $url = Url::fromArray($row);
+            $url = Url::fromDatabaseRow($row);
             $url->setId($row['id']);
             return $url;
         }
@@ -67,25 +93,5 @@ class UrlRepository
         $url->setId($id);
         
         return true;
-    }
-
-    public function delete(int $id): void
-    {
-        $sql = "DELETE FROM urls WHERE id = ?";
-        $stmt = $this->conn->prepare($sql);
-        $stmt->execute([$id]);
-
-        // Получаем имя последовательности
-        $sqlGetSequence = "SELECT pg_get_serial_sequence('urls', 'id');";
-        $stmtGetSequence = $this->conn->prepare($sqlGetSequence);
-        $stmtGetSequence->execute();
-        $sequenceName = $stmtGetSequence->fetchColumn();
-
-        // Сброс последовательности
-        if ($sequenceName) {
-            $sqlReset = "ALTER SEQUENCE {$sequenceName} RESTART WITH 1;";
-            $stmtReset = $this->conn->prepare($sqlReset);
-            $stmtReset->execute();
-        }
     }
 }
