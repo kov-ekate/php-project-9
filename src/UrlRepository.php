@@ -3,7 +3,6 @@
 namespace App;
 
 use App\Url;
-use Carbon\Carbon;
 
 class UrlRepository
 {

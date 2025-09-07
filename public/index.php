@@ -4,6 +4,8 @@ require __DIR__ . '/../vendor/autoload.php';
 
 use App\UrlRepository;
 use App\Url;
+use App\UrlCheckRepository;
+use App\UrlCheck;
 use App\Validator;
 use Slim\Factory\AppFactory;
 use DI\Container;
@@ -46,6 +48,11 @@ $container->set(UrlRepository::class, function ($container) {
     return new UrlRepository($pdo);
 });
 
+$container->set(UrlCheckRepository::class, function ($container) {
+    $pdo = $container->get(\PDO::class);
+    return new UrlCheckRepository($pdo);
+});
+
 $app = AppFactory::createFromContainer($container);
 $app->addErrorMiddleware(true, true, true);
 $router = $app->getRouteCollector()->getRouteParser();
@@ -58,7 +65,7 @@ $app->add(new Session());
 
 $app->get('/', function ($request, $response) {
     return $this->get('renderer')->render($response, 'index.phtml');
-});
+})->setName('home');
 
 $app->get('/urls', function ($request, $response) use ($router) {
     $session = $this->get('session');
@@ -86,6 +93,7 @@ $app->get('/urls', function ($request, $response) use ($router) {
 $app->get('/urls/{id}', function ($request, $response, $args) {
     $id = $args['id'];
     $urlRepository = $this->get(UrlRepository::class);
+    $urlCheckRepository = $this->get(UrlCheckRepository::class);
     $url = $urlRepository->find($id);
 
     if (is_null($url)) {
@@ -93,9 +101,11 @@ $app->get('/urls/{id}', function ($request, $response, $args) {
     }
 
     $message = $this->get('flash')->getMessages();
+    $urlChecks = $urlCheckRepository->findByUrlId($id);
 
     $params = [
         'url' => $url,
+        'urlCheck' => $urlChecks,
         'flash' => $message
     ];
 
@@ -140,7 +150,17 @@ $app->post('/urls', function ($request, $response) use ($router) {
         return $response->withHeader('Location', $router->urlFor('urls.index'))
                         ->withStatus(302);
     }
-})->setName('post');
+})->setName('url.post');
+
+$app->post('/urls/{id}/checks', function ($request, $response, $args) use ($router) {
+    $id = $args['id'];
+    $UrlCheckRepository = $this->get(UrlCheckRepository::class);
+    $urlData = ['url_id' => $id];
+    $url = UrlCheck::fromArray($urlData);
+    $UrlCheckRepository->save($url);
+    return $response->withHeader('Location', $router->urlFor('url.show', ['id' => $id]))
+                    ->withStatus(302);
+})->setName('url.post.check');
 
 $app->post('/urls/{id}/delete', function ($request, $response, array $args) use ($router) {
     $id = $args['id'];

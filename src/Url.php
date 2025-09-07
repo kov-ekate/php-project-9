@@ -4,7 +4,7 @@ namespace App;
 
 use Carbon\Carbon;
 
-class Url 
+class Url
 {
     private ?int $id = null;
     private ?string $name = null;
@@ -30,7 +30,7 @@ class Url
         return $this->name;
     }
 
-    public function getCreatedAt(): ?string
+    public function getCreatedAt(): ?Carbon
     {
         return $this->createdAt;
     }

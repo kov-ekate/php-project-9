@@ -49,7 +49,41 @@
         </div>
     </div>
 
-
+    <h1 class="mb-1">Проверки <?= htmlspecialchars($url->getName()) ?></h1>
+    <div class="container mt-4">
+        <form action="/urls/<?= $url->getId() ?>/checks" method="post">
+        <input type="submit" value="Запустить проверку">
+        <div class="container text-center">
+            <table class="table table-hover" data-test="checks">
+                <tbody>
+                    <tr>
+                        <td>ID</td>
+                        <td><?= htmlspecialchars($urlCheck->getId()) ?></td>
+                    </tr>
+                    <tr>
+                        <td>Код ответа</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>h1</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>title</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>description</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>Дата создания</td>
+                        <td><?= htmlspecialchars($urlCheck->getCreatedAt()) ?></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 
 
 
