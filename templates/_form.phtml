@@ -6,7 +6,7 @@
                 <form action="/urls" method="post">
                     <div class="d-flex align-items-start">
                         <div class="flex-grow-1">
-                            <input type="text" id="url" name="url[name]" class="form-control me-4 <?= !empty($flash['error']) ? 'is-invalid' : '' ?> mb-2" value="<?= htmlspecialchars($url->getName() ?? '') ?>" placeholder="https://www.example.com">
+                            <input type="text" id="url" name="url[name]" class="form-control me-4 <?= !empty($flash['error']) ? 'is-invalid' : '' ?> mb-2" value="<?= htmlspecialchars($url ? $url->getName() : '') ?>" placeholder="https://www.example.com">
                                 <?php if (!empty($flash) && isset($flash['error'])): ?>
                                     <?php foreach ($flash['error'] as $message): ?>
                                         <div class="invalid-feedback"><?= htmlspecialchars($message) ?></div>
