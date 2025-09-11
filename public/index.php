@@ -69,6 +69,9 @@ $router = $app->getRouteCollector()->getRouteParser();
 $app->add(new Session());
 
 $app->get('/', function ($request, $response) {
+    $session = $this->get('session');
+    $session->delete('url');
+
     $params = [
         'url' => null
     ];

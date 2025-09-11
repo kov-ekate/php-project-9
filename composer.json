@@ -31,8 +31,6 @@
         "squizlabs/php_codesniffer": "*"
     },
     "autoload-dev": {
-        "psr-4": {
-            "Tests\\": "tests/"
-        }
+        
     }
 }
