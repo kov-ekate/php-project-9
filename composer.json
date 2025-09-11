@@ -22,7 +22,9 @@
         "php-di/php-di": "^7.1",
         "slim/flash": "^0.4.0",
         "nesbot/carbon": "^3.10",
-        "bryanjhv/slim-session": "~4.0"
+        "bryanjhv/slim-session": "~4.0",
+        "guzzlehttp/guzzle": "^7.0",
+        "imangazaliev/didom": "^2.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^12.1",

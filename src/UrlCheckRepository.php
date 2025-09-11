@@ -52,11 +52,19 @@ class UrlCheckRepository
 
     public function save(UrlCheck $urlCheck): bool
     {
-        $sql = "INSERT INTO url_checks (url_id, created_at) VALUES (:url_id, :created_at)";
+        $sql = "INSERT INTO url_checks (url_id, status_code, h1, title, description, created_at) VALUES (:url_id, :status_code, :h1, :title, :description, :created_at)";
         $stmt = $this->conn->prepare($sql);
         $urlId = $urlCheck->getUrlId();
+        $statusCode = $urlCheck->getStatusCode();
+        $h1 = $urlCheck->getH1();
+        $title = $urlCheck->getTitle();
+        $description = $urlCheck->getDescription();
         $createdAt = $urlCheck->getCreatedAt();
         $stmt->bindParam(':url_id', $urlId);
+        $stmt->bindParam(':status_code', $statusCode);
+        $stmt->bindParam(':h1', $h1);
+        $stmt->bindParam(':title', $title);
+        $stmt->bindParam(':description', $description);
         $stmt->bindParam(':created_at', $createdAt);
         $result = $stmt->execute();
         $id = (int) $this->conn->lastInsertId();

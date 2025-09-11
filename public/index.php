@@ -7,10 +7,13 @@ use App\Url;
 use App\UrlCheckRepository;
 use App\UrlCheck;
 use App\Validator;
+use App\SeoAnalysis;
 use Slim\Factory\AppFactory;
 use DI\Container;
 use Slim\Views\PhpRenderer;
 use Slim\Middleware\Session;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\ConnectException;
 use SlimSession\Helper as SessionHelper;
 
 
@@ -55,13 +58,13 @@ $container->set(UrlCheckRepository::class, function ($container) {
     return new UrlCheckRepository($pdo);
 });
 
-$app = AppFactory::createFromContainer($container);
-$app->addErrorMiddleware(true, true, true);
-$router = $app->getRouteCollector()->getRouteParser();
-
 $container->set('session', function () {
     return new SessionHelper();
 });
+
+$app = AppFactory::createFromContainer($container);
+$app->addErrorMiddleware(true, true, true);
+$router = $app->getRouteCollector()->getRouteParser();
 
 $app->add(new Session());
 
@@ -78,18 +81,26 @@ $app->get('/urls', function ($request, $response) use ($router) {
 
     $urlRepository = $this->get(UrlRepository::class);
     $urls = $urlRepository->getEntities();
-    $urlCheckRepository = $this->get(UrlRepository::class);
+    $urlCheckRepository = $this->get(UrlCheckRepository::class);
     $urlChecks = $urlCheckRepository->getEntities();
     $lastChecks = $urlRepository->getLastChecks();
+
     $urlsWithLastCheck = [];
+
     foreach ($urls as $url) {
         $urlId = $url->getId();
-        $lastCheck = $lastChecks[$urlId] ?? null;
+        $lastCheckData = $lastChecks[$urlId] ?? null;
+        
+        if ($lastCheckData) {
+            $lastCheck = $lastCheckData['last_check'];
+            $statusCode = $lastCheckData['last_status_code'];
+        }
 
         $urlsWithLastCheck[] = [
             'id' => $urlId,
             'name' => $url->getName(),
             'last_check' => $lastCheck,
+            'status_code' => $statusCode
         ];
     }
 
@@ -172,11 +183,55 @@ $app->post('/urls', function ($request, $response) use ($router) {
 
 $app->post('/urls/{id}/checks', function ($request, $response, $args) use ($router) {
     $id = $args['id'];
-    $UrlCheckRepository = $this->get(UrlCheckRepository::class);
-    $urlData = ['url_id' => $id];
-    $url = UrlCheck::fromArray($urlData);
-    $UrlCheckRepository->save($url);
-    $this->get('flash')->addMessage('success', 'Страница успешно проверена');
+    $urlRepository = $this->get(UrlRepository::class);
+    $urlCheckRepository = $this->get(UrlCheckRepository::class);
+
+    $url = $urlRepository->find($id);
+    $urlName = $url->getName();
+
+    $client = new Client([
+        'timeout' => 10.0,
+        'connect_timeout' => 10.0,
+        'http_errors' => false,
+        'verify' => false
+    ]);
+
+    try {
+        $responseGuzzle = $client->request('GET', $urlName);
+        $statusCode = $responseGuzzle->getStatusCode();
+        $html = $responseGuzzle->getBody()->getContents();
+
+        $analysis = new SeoAnalysis;
+        $seoData = $analysis->analyze($html);
+        $h1 = $seoData['h1'];
+        $title = $seoData['title'];
+        $description = $seoData['description'];
+
+        $urlData = [
+            'url_id' => $id,
+            'status_code' => $statusCode,
+            'h1' => $h1,
+            'title' => $title,
+            'description' => $description
+        ];
+
+        $urlCheck = UrlCheck::fromArray($urlData);
+        $success = $urlCheckRepository->save($urlCheck);
+        if ($success) {
+            $this->get('flash')->addMessage('success', 'Страница успешно проверена');
+            return $response->withHeader('Location', $router->urlFor('url.show', ['id' => $id]))
+                            ->withStatus(302);
+        } else {
+            $this->get('flash')->addMessage('error', 'Ошибка');
+            return $response->withHeader('Location', $router->urlFor('url.show', ['id' => $id]))
+                             ->withStatus(302);
+        }
+    } catch (ConnectException $e) {
+        $this->get('flash')->addMessage('error', 'Сервер не отвечает или отсутствует подключение к интернету');
+    } catch (\Exception $e) {
+        $this->get('flash')->addMessage('error', 'Произошла непредвиденная ошибка: ' . $e->getMessage());
+    }
+
     return $response->withHeader('Location', $router->urlFor('url.show', ['id' => $id]))
                     ->withStatus(302);
 })->setName('url.post.check');

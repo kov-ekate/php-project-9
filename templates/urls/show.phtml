@@ -29,6 +29,13 @@
             </div>
         <?php endforeach; ?>
     <?php endif; ?>
+    <?php if (!empty($flash['error'])): ?>
+        <?php foreach ($flash['error'] as $message): ?>
+            <div class="alert alert-error" role="alert">
+                <?= htmlspecialchars($message) ?>
+            </div>
+        <?php endforeach; ?>
+    <?php endif; ?>
 
     <h1 class="mb-1">Сайт <?= htmlspecialchars($url->getName()) ?></h1>
     <div class="container mt-4">
@@ -74,10 +81,10 @@
                     <?php foreach ($urlChecks as $check): ?>
                     <tr>
                         <td><?= htmlspecialchars($check->getId()) ?></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
+                        <td><?= htmlspecialchars($check->getStatusCode()) ?></td>
+                        <td><?= htmlspecialchars($check->getH1()) ?></td>
+                        <td><?= htmlspecialchars($check->getTitle()) ?></td>
+                        <td><?= htmlspecialchars($check->getDescription()) ?></td>
                         <td><?= htmlspecialchars($check->getCreatedAt()) ?></td>
                     </tr>
                 <?php endforeach; ?>

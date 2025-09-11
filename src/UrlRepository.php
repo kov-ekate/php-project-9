@@ -44,7 +44,8 @@ class UrlRepository
         $sql = "SELECT
                     urls.id,
                     urls.name,
-                    MAX(url_checks.created_at) AS last_check
+                    MAX(url_checks.created_at) AS last_check,
+                    (SELECT status_code FROM url_checks WHERE url_id = urls.id ORDER BY created_at DESC LIMIT 1) AS last_status_code
                 FROM
                     urls
                 LEFT JOIN
@@ -57,7 +58,10 @@ class UrlRepository
         $stmt = $this->conn->query($sql);
 
         while ($row = $stmt->fetch()) {
-            $lastChecks[$row['id']] = $row['last_check'] ? new Carbon($row['last_check']) : null;
+            $lastChecks[$row['id']] = [
+                'last_check' => $row['last_check'] ? new Carbon($row['last_check']) : null,
+                'last_status_code' => $row['last_status_code'] ? (int)$row['last_status_code'] : null
+            ];
         }
 
         return $lastChecks;
