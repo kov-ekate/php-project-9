@@ -164,7 +164,7 @@ $app->post('/urls', function ($request, $response) use ($router) {
             $errors['url'] = 'Этот URL уже существует';
             $session->set('errors', $errors);
             $session->set('url', $urlData);
-            $this->get('flash')->addMessage('error', 'Этот URL уже существует');
+            $this->get('flash')->addMessage('error', 'Страница уже существует');
             return $response->withHeader('Location', $router->urlFor('urls.index'))
                              ->withStatus(302);
         }
