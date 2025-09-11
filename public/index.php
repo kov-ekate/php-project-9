@@ -69,13 +69,7 @@ $router = $app->getRouteCollector()->getRouteParser();
 $app->add(new Session());
 
 $app->get('/', function ($request, $response) {
-    $session = $this->get('session');
-    $session->delete('url');
-
-    $params = [
-        'url' => null
-    ];
-    return $this->get('renderer')->render($response, 'index.phtml', $params);
+    return $this->get('renderer')->render($response, 'index.phtml');
 })->setName('home');
 
 $app->get('/urls', function ($request, $response) use ($router) {
