@@ -20,15 +20,15 @@ class Validator implements ValidatorInterface
         }
 
         if (!isset($parsedUrl['scheme']) || empty($parsedUrl['scheme'])) {
-            $errors['scheme'] = 'Неккоректный URL';
+            $errors['url'] = 'Неккоректный URL';
         }
 
         if (!isset($parsedUrl['host']) || empty($parsedUrl['host'])) {
-            $errors['host'] = 'Неккоректный URL';
+            $errors['url'] = 'Неккоректный URL';
         }
 
         if (strlen($url) > 255) {
-            $errors['symbols'] = 'Неккоректный URL';
+            $errors['url'] = 'Неккоректный URL';
         }
 
         return $errors;
