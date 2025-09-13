@@ -161,11 +161,11 @@ $app->post('/urls', function ($request, $response) use ($router) {
             return $response->withHeader('Location', $router->urlFor('url.show', ['id' => $id]))
                             ->withStatus(302);
         } else {
-            $errors['url'] = 'Этот URL уже существует';
-            $session->set('errors', $errors);
-            $session->set('url', $urlData);
+            $errors['url'] = 'Страница уже существует';
             $this->get('flash')->addMessage('error', 'Страница уже существует');
-            return $response->withHeader('Location', $router->urlFor('urls.index'))
+            $urlWithId = $urlRepository->findByName($url);
+            $id = $urlWithId->getId();
+            return $response->withHeader('Location', $router->urlFor('url.show', ['id' => $id]))
                              ->withStatus(302);
         }
     } else {

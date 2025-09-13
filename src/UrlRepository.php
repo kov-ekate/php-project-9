@@ -80,6 +80,21 @@ class UrlRepository
         return null;
     }
 
+    public function findByName(Url $url): ?Url
+    {
+        $name = $url->getName();
+
+        $sql = "SELECT * FROM urls WHERE name = ?";
+        $stmt = $this->conn->prepare($sql);
+        $stmt->execute([$name]);
+        if ($row = $stmt->fetch())  {
+            $url = Url::fromDatabaseRow($row);
+            $url->setId($row['id']);
+            return $url;
+        }
+        return null;
+    }
+
     public function save(Url $url): bool
     {
         if ($this->urlExists($url->getName())) {
