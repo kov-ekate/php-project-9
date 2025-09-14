@@ -149,8 +149,6 @@ $app->post('/urls', function ($request, $response) use ($router) {
     $validator = new Validator;
     $errors = $validator->validate($urlData);
 
-    $session = $this->get('session');
-
     if (count($errors) === 0) {
         $normalUrl = $validator->normalyzer($urlData);
         $url = Url::fromArray(['name' => $normalUrl]);
@@ -166,18 +164,25 @@ $app->post('/urls', function ($request, $response) use ($router) {
             $urlWithId = $urlRepository->findByName($url);
             $id = $urlWithId->getId();
             return $response->withHeader('Location', $router->urlFor('url.show', ['id' => $id]))
-                             ->withStatus(302);
+                            ->withStatus(302);
         }
     } else {
-        $session->set('errors', $errors);
-        $session->set('url', $urlData);
         if ($errors['url'] === 'URL не должен быть пустым') {
             $this->get('flash')->addMessage('error', 'URL не должен быть пустым');
+            $flash = $this->get('flash')->getMessages();
         } else {
             $this->get('flash')->addMessage('error', 'Некорректный URL');
+            $flash = $this->get('flash')->getMessages();
         }
-        return $response->withHeader('Location', $router->urlFor('urls.index'))
-                        ->withStatus(302);
+
+        $url = Url::fromArray(['name' => $urlData]);
+        
+        $params = [
+            'errors' => $errors,
+            'url' => $url,
+            'flash' => $flash
+        ];
+        return $this->get('renderer')->render($response->withStatus(422), 'urls/index.phtml', $params);
     }
 })->setName('url.post');
 
