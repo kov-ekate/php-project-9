@@ -73,12 +73,6 @@ $app->get('/', function ($request, $response) {
 })->setName('home');
 
 $app->get('/urls', function ($request, $response) use ($router) {
-    $session = $this->get('session');
-    $errors = $session->get('errors', []);
-    $url = $session->get('url', ''); 
-    $session->delete('errors');
-    $session->delete('url');
-
     $urlRepository = $this->get(UrlRepository::class);
     $urls = $urlRepository->getEntities();
     $urlCheckRepository = $this->get(UrlCheckRepository::class);
@@ -104,14 +98,11 @@ $app->get('/urls', function ($request, $response) use ($router) {
         ];
     }
 
-    $flash = $this->get('flash')->getMessages();
-
     $params = [
         'urls' => $urlsWithLastCheck,
-        'errors' => $errors,
+        'errors' => [],
         'url' => $url,
         'urlChecks' => $urlChecks,
-        'flash' => $flash,
         'router' => $router
     ];
 
