@@ -52,7 +52,7 @@
     </style>
 </head>
 <body>
-        <?php if (!empty($errors)): ?>
+        <?php if (!empty($flash)): ?>
             <?= $this->fetch('_nav.phtml') ?>
             <?= $this->fetch('_form.phtml', ['url' => $url, 'flash' => $flash]) ?>
             <?php else: ?>

@@ -116,7 +116,12 @@ $app->get('/urls/{id}', function ($request, $response, $args) use ($router) {
     $url = $urlRepository->find($id);
 
     if (is_null($url)) {
-        return $response->withStatus(404);
+        $flash = 'Некорректный URL';
+        $params = [
+            'flash' => $flash,
+            'url' => $url
+        ];
+        return $this->get('renderer')->render($response->withStatus(422), 'urls/index.phtml', $params);
     }
 
     $message = $this->get('flash')->getMessages();
