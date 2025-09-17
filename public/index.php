@@ -150,7 +150,6 @@ $app->post('/urls', function ($request, $response) use ($router) {
             return $response->withHeader('Location', $router->urlFor('url.show', ['id' => $id]))
                             ->withStatus(302);
         } else {
-            $errors['url'] = 'Страница уже существует';
             $this->get('flash')->addMessage('error', 'Страница уже существует');
             $urlWithId = $urlRepository->findByName($url);
             $id = $urlWithId->getId();
@@ -159,11 +158,9 @@ $app->post('/urls', function ($request, $response) use ($router) {
         }
     } else {
         if ($errors['url'] === 'URL не должен быть пустым') {
-            $this->get('flash')->addMessage('error', 'URL не должен быть пустым');
-            $flash = $this->get('flash')->getMessages();
+            $flash = 'URL не должен быть пустым';
         } else {
-            $this->get('flash')->addMessage('error', 'Некорректный URL');
-            $flash = $this->get('flash')->getMessages();
+            $flash = 'Некорректный URL';
         }
 
         $url = Url::fromArray(['name' => $urlData]);
