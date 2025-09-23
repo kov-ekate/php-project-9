@@ -73,6 +73,18 @@ $app->get('/', function ($request, $response) {
 })->setName('home');
 
 $app->get('/urls', function ($request, $response) use ($router) {
+    $flash = $this->get('flash')->getMessages();
+    if (!empty($flash)) {
+        $session = $this->get('session');
+        $url = $session->get('url', null);
+        $session->delete('url');
+        $params = [
+            'flash' => $flash,
+            'url' => $url
+        ];
+        $response = $response->withStatus(422);
+        return $this->get('renderer')->render($response, 'urls/index.phtml', $params);
+    }
     $urlRepository = $this->get(UrlRepository::class);
     $urls = $urlRepository->getEntities();
     $urlCheckRepository = $this->get(UrlCheckRepository::class);
@@ -116,12 +128,8 @@ $app->get('/urls/{id}', function ($request, $response, $args) use ($router) {
     $url = $urlRepository->find($id);
 
     if (is_null($url)) {
-        $flash = 'Некорректный URL';
-        $params = [
-            'flash' => $flash,
-            'url' => $url
-        ];
-        return $this->get('renderer')->render($response->withStatus(422), 'urls/index.phtml', $params);
+        $this->get('flash')->addMessage('error', 'Некорректный URL');
+        return $response->withHeader('Location', $router->urlFor('urls.index'))->withStatus(302);
     }
 
     $message = $this->get('flash')->getMessages();
@@ -163,19 +171,14 @@ $app->post('/urls', function ($request, $response) use ($router) {
         }
     } else {
         if ($errors['url'] === 'URL не должен быть пустым') {
-            $flash = 'URL не должен быть пустым';
+            $this->get('flash')->addMessage('error', 'URL не может быть пустым');
         } else {
-            $flash = 'Некорректный URL';
+            $this->get('flash')->addMessage('error', 'Некорректный URL');
         }
 
         $url = Url::fromArray(['name' => $urlData]);
-        
-        $params = [
-            'errors' => $errors,
-            'url' => $url,
-            'flash' => $flash
-        ];
-        return $this->get('renderer')->render($response->withStatus(422), 'urls/index.phtml', $params);
+        $this->get('session')->set('url', $url);
+        return $response->withHeader('Location', $router->urlFor('urls.index'))->withStatus(302);
     }
 })->setName('url.post');
 

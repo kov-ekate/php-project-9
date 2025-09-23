@@ -8,7 +8,9 @@
                         <div class="flex-grow-1">
                             <input type="text" id="url" name="url[name]" class="form-control me-4 <?= !empty($flash) ? 'is-invalid' : '' ?> mb-2" value="<?= htmlspecialchars(isset($url) ? $url->getName() : '') ?>" placeholder="https://www.example.com">
                                 <?php if (!empty($flash)): ?>
-                                        <div class="invalid-feedback"><?= htmlspecialchars($flash) ?></div>
+                                    <?php foreach ($flash['error'] as $message): ?>
+                                        <div class="invalid-feedback"><?= htmlspecialchars($message) ?></div>
+                                    <?php endforeach; ?>
                                 <?php endif; ?>
                         </div>
                         <input type="submit" class="button btn btn-primary ms-4" value="Проверить">
