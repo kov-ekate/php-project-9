@@ -9,7 +9,7 @@
                             <input type="text" id="url" name="url[name]" class="form-control me-4 <?= !empty($flash) ? 'is-invalid' : '' ?> mb-2" value="<?= htmlspecialchars(isset($url) ? $url->getName() : '') ?>" placeholder="https://www.example.com">
                                 <?php if (!empty($flash)): ?>
                                     <?php foreach ($flash['error'] as $message): ?>
-                                        <div class="invalid-feedback"><?= htmlspecialchars($message) ?></div>
+                                        <div class="invalid-feedback"><?= $message ?></div>
                                     <?php endforeach; ?>
                                 <?php endif; ?>
                         </div>
