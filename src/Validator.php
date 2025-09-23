@@ -2,7 +2,7 @@
 
 namespace App;
 
-class Validator implements ValidatorInterface
+class Normalyzer
 {
     public function validate(string $url): array
     {

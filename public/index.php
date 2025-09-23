@@ -6,7 +6,8 @@ use App\UrlRepository;
 use App\Url;
 use App\UrlCheckRepository;
 use App\UrlCheck;
-use App\Validator;
+use Valitron\Validator;
+use App\Normalyzer;
 use App\SeoAnalysis;
 use Slim\Factory\AppFactory;
 use DI\Container;
@@ -149,12 +150,21 @@ $app->post('/urls', function ($request, $response) use ($router) {
     $urlRepository = $this->get(UrlRepository::class);
     $parsedBody = $request->getParsedBody();
     $urlData = $parsedBody['url']['name'] ?? null;
+    $data = ['url' => $urlData];
 
-    $validator = new Validator;
-    $errors = $validator->validate($urlData);
+    $validator = new Validator($data);
+    if (empty($urlData)) {
+        $validator->rule('required', 'url')->message('URL не должен быть пустым');
+    } else {
+        $validator->rule('required', 'url')->message('URL не должен быть пустым');
+        $validator->rule('url', 'url')->message('Некорректный URL');
+    }
 
-    if (count($errors) === 0) {
-        $normalUrl = $validator->normalyzer($urlData);
+    $validator->labels(['url' => 'Url']);
+
+    if ($validator->validate()) {
+        $normalyzer = new Normalyzer;
+        $normalUrl = $normalyzer->normalyzer($urlData);
         $url = Url::fromArray(['name' => $normalUrl]);
         $success = $urlRepository->save($url);
         if ($success) {
@@ -170,10 +180,11 @@ $app->post('/urls', function ($request, $response) use ($router) {
                             ->withStatus(302);
         }
     } else {
-        if ($errors['url'] === 'URL не должен быть пустым') {
-            $this->get('flash')->addMessage('error', 'URL не может быть пустым');
-        } else {
-            $this->get('flash')->addMessage('error', 'Некорректный URL');
+        $errors = $validator->errors();
+        if (!empty($errors['url'])) {
+            foreach ($errors['url'] as $error) {
+                $this->get('flash')->addMessage('error', $error);
+            }
         }
 
         $url = Url::fromArray(['name' => $urlData]);
