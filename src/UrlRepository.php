@@ -106,7 +106,7 @@ class UrlRepository
     public function save(Url $url): bool
     {
         $urlName = $url->getName();
-        $urlNameToCheck = is_string($urlName) ? $urlName : ''; 
+        $urlNameToCheck = is_string($urlName) ? $urlName : '';
         if ($this->urlExists($urlNameToCheck)) {
             return false;
         }
