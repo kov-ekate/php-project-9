@@ -14,7 +14,7 @@ class UrlRepository
         $this->conn = $conn;
     }
 
-     public function urlExists(string $url): bool
+    public function urlExists(string $url): bool
     {
         $sql = "SELECT COUNT(*) FROM urls WHERE name = ?";
         $stmt = $this->conn->prepare($sql);
@@ -72,7 +72,7 @@ class UrlRepository
         $sql = "SELECT * FROM urls WHERE id = ?";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute([$id]);
-        if ($row = $stmt->fetch())  {
+        if ($row = $stmt->fetch()) {
             $url = Url::fromDatabaseRow($row);
             $url->setId($row['id']);
             return $url;
@@ -87,7 +87,7 @@ class UrlRepository
         $sql = "SELECT * FROM urls WHERE name = ?";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute([$name]);
-        if ($row = $stmt->fetch())  {
+        if ($row = $stmt->fetch()) {
             $url = Url::fromDatabaseRow($row);
             $url->setId($row['id']);
             return $url;
@@ -110,7 +110,7 @@ class UrlRepository
         $stmt->execute();
         $id = (int) $this->conn->lastInsertId();
         $url->setId($id);
-        
+
         return true;
     }
 }

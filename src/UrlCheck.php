@@ -23,7 +23,7 @@ class UrlCheck
             'title' => $title,
             'description' => $description
         ] = $urlData;
-        $url = new UrlCheck;
+        $url = new UrlCheck();
         $url->setUrlId($urlId);
         $url->setStatusCode($statusCode);
         $url->setH1($h1);
@@ -31,7 +31,7 @@ class UrlCheck
         $url->setDescription($description);
         $createdAt = Carbon::now();
         $url->createdAt = $createdAt;
-        
+ 
         return $url;
     }
 

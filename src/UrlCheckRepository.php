@@ -28,7 +28,7 @@ class UrlCheckRepository
         return $urls;
     }
 
-     public function urlExists(string $urlId): bool
+    public function urlExists(string $urlId): bool
     {
         $sql = "SELECT COUNT(*) FROM url_checks WHERE url_id = ?";
         $stmt = $this->conn->prepare($sql);
@@ -69,7 +69,7 @@ class UrlCheckRepository
         $result = $stmt->execute();
         $id = (int) $this->conn->lastInsertId();
         $urlCheck->setId($id);
-        
+
         return $result;
     }
 }

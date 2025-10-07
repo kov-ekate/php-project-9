@@ -13,11 +13,11 @@ class Url
     public static function fromArray(array $urlData): Url
     {
         ['name' => $name] = $urlData;
-        $url = new Url;
+        $url = new Url();
         $url->setName($name);
         $createdAt = Carbon::now();
         $url->createdAt = $createdAt;
-        
+
         return $url;
     }
 
