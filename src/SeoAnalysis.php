@@ -3,6 +3,7 @@
 namespace App;
 
 use DiDom\Document;
+use DiDom\Element;
 
 class SeoAnalysis
 {
