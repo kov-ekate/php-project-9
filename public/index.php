@@ -156,7 +156,6 @@ $app->post('/urls', function ($request, $response) use ($router) {
     if (empty($urlData)) {
         $validator->rule('required', 'url')->message('URL не должен быть пустым');
     } else {
-        $validator->rule('required', 'url')->message('URL не должен быть пустым');
         $validator->rule('url', 'url')->message('Некорректный URL');
     }
 
@@ -181,15 +180,19 @@ $app->post('/urls', function ($request, $response) use ($router) {
         }
     } else {
         $errors = $validator->errors();
+        $flash = [];
         if (!empty($errors['url'])) {
             foreach ($errors['url'] as $error) {
-                $this->get('flash')->addMessage('error', $error);
+                $flash[] = $error;
             }
         }
 
         $url = Url::fromArray(['name' => $urlData]);
-        $this->get('session')->set('url', $url);
-        return $response->withHeader('Location', $router->urlFor('urls.index'))->withStatus(302);
+        $params = [
+            'flash' => ['error' => $flash],
+            'url' => $url
+        ];
+        return $this->get('renderer')->render($response->withStatus(422), 'urls/index.phtml', $params);
     }
 })->setName('url.post');
 
