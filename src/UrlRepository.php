@@ -29,6 +29,10 @@ class UrlRepository
         $sql = "SELECT * FROM urls ORDER BY id DESC";
         $stmt = $this->conn->query($sql);
 
+        if ($stmt === false) {
+            return [];
+        }
+
         while ($row = $stmt->fetch()) {
             $url = Url::fromDatabaseRow($row);
             $url->setId($row['id']);
@@ -56,6 +60,10 @@ class UrlRepository
                     urls.id DESC
             ";
         $stmt = $this->conn->query($sql);
+
+        if ($stmt === false) {
+            return [];
+        }
 
         while ($row = $stmt->fetch()) {
             $lastChecks[$row['id']] = [
@@ -97,7 +105,9 @@ class UrlRepository
 
     public function save(Url $url): bool
     {
-        if ($this->urlExists($url->getName())) {
+        $urlName = $url->getName();
+        $urlNameToCheck = is_string($urlName) ? $urlName : ''; 
+        if ($this->urlExists($urlNameToCheck)) {
             return false;
         }
 

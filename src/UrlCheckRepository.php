@@ -19,6 +19,10 @@ class UrlCheckRepository
         $sql = "SELECT * FROM url_checks ORDER BY id DESC";
         $stmt = $this->conn->query($sql);
 
+        if ($stmt === false) {
+            return [];
+        }
+
         while ($row = $stmt->fetch()) {
             $url = UrlCheck::fromDatabaseRow($row);
             $url->setId($row['id']);
