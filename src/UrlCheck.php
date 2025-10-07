@@ -31,7 +31,7 @@ class UrlCheck
         $url->setDescription($description);
         $createdAt = Carbon::now();
         $url->createdAt = $createdAt;
- 
+
         return $url;
     }
 
