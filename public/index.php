@@ -25,7 +25,11 @@ $container->set('renderer', function () {
 });
 
 $container->set(\PDO::class, function () {
-    $databaseUrl = parse_url(getenv('DATABASE_URL'));
+    $dbUrlString = getenv('DATABASE_URL');
+    if (!is_string($dbUrlString) || empty($dbUrlString)) {
+        throw new \Exception("DATABASE_URL не установлена или некорректна");
+    }
+    $databaseUrl = parse_url($dbUrlString);
     $username = $databaseUrl['user'];
     $password = $databaseUrl['pass'];
     $host = $databaseUrl['host'];
@@ -38,6 +42,9 @@ $container->set(\PDO::class, function () {
         $pdo = new PDO($dsn, $username, $password);
         $pdo->setAttribute(\PDO::ATTR_DEFAULT_FETCH_MODE, \PDO::FETCH_ASSOC);
         $sql = file_get_contents(__DIR__ . '/../database.sql');
+        if ($sql === false) {
+            throw new \RuntimeException("Ошибка чтения файла базы данных");
+        }
         $pdo->exec($sql);
         return $pdo;
     } catch (\PDOException $e) {
@@ -93,11 +100,14 @@ $app->get('/urls', function ($request, $response) use ($router) {
     $lastChecks = $urlRepository->getLastChecks();
 
     $urlsWithLastCheck = [];
+    $lastCheck = null;
+    $statusCode = null;
+    $url = null;
 
     foreach ($urls as $url) {
         $urlId = $url->getId();
         $lastCheckData = $lastChecks[$urlId] ?? null;
-        
+
         if ($lastCheckData) {
             $lastCheck = $lastCheckData['last_check'];
             $statusCode = $lastCheckData['last_status_code'];
@@ -168,7 +178,7 @@ $app->post('/urls', function ($request, $response) use ($router) {
         $success = $urlRepository->save($url);
         if ($success) {
             $this->get('flash')->addMessage('success', 'Страница успешно добавлена');
-            $id = $url->getId();
+            $id = (string) $url->getId();
             return $response->withHeader('Location', $router->urlFor('url.show', ['id' => $id]))
                             ->withStatus(302);
         } else {
