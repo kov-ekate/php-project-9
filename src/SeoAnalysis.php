@@ -20,7 +20,7 @@ class SeoAnalysis
         $seoData['title'] = $title;
 
         $descriptionElement = $dom->first('meta[name="description"]');
-        $seoData['description'] = (string) optional($descriptionElement)->attr('content'); 
+        $seoData['description'] = (string) optional($descriptionElement)->attr('content');
 
         return $seoData;
     }
