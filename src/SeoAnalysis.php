@@ -19,18 +19,9 @@ class SeoAnalysis
         $title = (string) optional($dom->first('title'))->text();
         $seoData['title'] = $title;
 
-        $descriptionElement = $dom->first('meta[name="description"]');
-        $descriptionContent = '';
+        $description = $dom->first('meta[name="description"]::attr(content)');
 
-        if ($descriptionElement) {
-            if ($descriptionElement instanceof \DiDom\Element) {
-                $descriptionContent = optional($descriptionElement)->attr('content');
-            } elseif ($descriptionElement instanceof \DOMElement) {
-                $descriptionContent = optional($descriptionElement)->getAttribute('content');
-            }
-        }
-
-        $seoData['description'] = (string) $descriptionContent;
+        $seoData['description'] = (string) $description;
 
         return $seoData;
     }
