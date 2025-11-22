@@ -4,6 +4,7 @@ namespace App;
 
 use DiDom\Document;
 use DiDom\Element;
+use Illuminate\Support\Optional;
 
 class SeoAnalysis
 {
@@ -12,26 +13,14 @@ class SeoAnalysis
         $dom = new Document($html);
         $seoData = [];
 
-        $h1 = $dom->first('h1');
-        if ($h1) {
-            $seoData['h1'] = $h1->text();
-        } else {
-            $seoData['h1'] = '';
-        }
+        $h1 = (string) optional($dom->first('h1'))->text();
+        $seoData['h1'] = $h1;
 
-        $title = $dom->first('title');
-        if ($title) {
-            $seoData['title'] = $title->text();
-        } else {
-            $seoData['title'] = '';
-        }
+        $title = (string) optional($dom->first('title'))->text();
+        $seoData['title'] = $title;
 
-        $description = $dom->first('meta[name="description"]');
-        if ($description) {
-            $seoData['description'] = $description->attr('content');
-        } else {
-            $seoData['description'] = '';
-        }
+        $descriptionElement = $dom->first('meta[name="description"]');
+        $seoData['description'] = (string) optional($descriptionElement)->attr('content'); 
 
         return $seoData;
     }
