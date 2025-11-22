@@ -21,7 +21,7 @@ class SeoAnalysis
 
         $description = $dom->first('meta[name="description"]::attr(content)');
 
-        $seoData['description'] = (string) $description;
+        $seoData['description'] = $description;
 
         return $seoData;
     }
